@@ -16,9 +16,7 @@ pyinstaller CommissioningStation.py \
 	--noconsole \
 	--icon=images/CommissioningStation.ico \
 	-p equipment \
-	-p procedures \
-	--hiddenimport procedures.guitest \
-	--hiddenimport procedures.guitest_fail_continue
+	-p procedures
 cp -r ./images ./dist/CommissioningStation/images
 cp -r ./config ./dist/CommissioningStation/config
 

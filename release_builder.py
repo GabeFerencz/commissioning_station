@@ -1,6 +1,7 @@
 import os
 import sys
 from glob import glob
+import pathlib
 
 def parse_version_tag(version_tag):
     version_tag_tuple = version_tag.split('-')
@@ -15,7 +16,7 @@ def parse_version_tag(version_tag):
 
 def test_parse_version_tag():
     # Test things that should use the long version name
-    use_long_name = ['Release-1.2-0-1234567', 'Release_1.2-5-1234567', 
+    use_long_name = ['Release-1.2-0-1234567', 'Release_1.2-5-1234567',
                     'Release_1.2-5-1234567-dirty']
     for version_tag in use_long_name:
         exp = version_tag
@@ -23,7 +24,7 @@ def test_parse_version_tag():
         assert got == exp, 'ERROR: got %s, expected %s'%(got, exp)
 
     # Test things that should use the short version name
-    use_short_name = [('Release_1.2-0-1234567', 'Release_1.2'), 
+    use_short_name = [('Release_1.2-0-1234567', 'Release_1.2'),
                     ('Release_1.0-0-abcdef0', 'Release_1.0'),
                     ('v1.0-0-abcdef0', 'v1.0')]
     for (version_tag, resp) in use_short_name:
@@ -33,16 +34,17 @@ def test_parse_version_tag():
 
 def build_release_file(version_string):
     lines = ['import sys']
-    
-    # Ensure that the equipment and procedures are on the path so they 
+
+    # Ensure that the equipment and procedures are on the path so they
     # can be easily imported by the other scripts
     lines.append("sys.path.insert(0, './procedures')")
     lines.append("sys.path.insert(0, './equipment')")
-    
-    # Add the imports for the built in procedures
+
+    # Add the imports for the built in procedures because pyinstaller does not
+    # detect them when they're imported at runtime
     for file in glob('procedures/*.py'):
-        lines.append('import %s'%os.path.basename(file).replace('.py', ''))
-    
+        lines.append('import procedures.%s'%pathlib.Path(file).stem)
+
     # Add the version string
     lines.append("version = '%s'"%parse_version_tag(version_string))
 
@@ -52,6 +54,6 @@ def build_release_file(version_string):
 
 if __name__ == "__main__":
     test_parse_version_tag()
-    
+
     version_string = sys.argv[1]
     build_release_file(version_string)
